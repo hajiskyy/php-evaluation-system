@@ -91,17 +91,29 @@ class Attendance {
     }
 
     public function single(){
-        $query = "SELECT * from $this->table WHERE student_id = :id";
+        $query = "SELECT COUNT(*) AS attended from $this->table WHERE student_id = :id AND course = :course LIMIT 16";
         $stmt = $this->conn->prepare($query);
 
         //sanitize
         $this->studentId = htmlspecialchars(strip_tags($this->studentId));
+        $this->course = htmlspecialchars(strip_tags($this->course));
 
         //bind parameters
         $stmt->bindParam(':id', $this->studentId);
+        $stmt->bindParam(':course', $this->course);
 
         $stmt->execute();
-        return $stmt;
+
+        $result = $stmt;
+
+        //get row count
+        $num = $result->rowCount();
+    
+        if($num > 0){
+            $attendance = $result->fetch(PDO::FETCH_OBJ);
+        }
+    
+        return $attendance ? $attendance : NULL;
     }
 
 }

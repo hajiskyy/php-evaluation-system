@@ -63,67 +63,37 @@ class Grades {
 
     }
 
-    // delete attendance
-    public function delete(){
-        //query
-        $query = "DELETE FROM $this->table WHERE student_id = :student_id ORDER BY updated_at DESC LIMIT 1";
-    
-        $stmt = $this->conn->prepare($query);
-
-        // sanitize data
-        $this->studentId = htmlspecialchars(strip_tags($this->studentId));
-
-        // bind parameter
-        $stmt->bindParam(':student_id',$this->studentId);
-    
-        // return true if query is successful
-        if($stmt->execute()){
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-                    
-    }
-
-    public function getAll(){
-        //query
-        $query = "SELECT * FROM $this->table WHERE course = :course";
-        $stmt = $this->conn->prepare($query);
-        // sanitize data
-        $this->course = htmlspecialchars(strip_tags($this->course));
-
-        // bind parameter
-        $stmt->bindParam(':course',$this->course);
-        $stmt->execute();
-        $result = $stmt;
-
-        //get row count
-        $num = $result->rowCount();
-
-        //create student array
-        $attendance = array();
-    
-      if($num > 0){
-        while($row = $result->fetch(PDO::FETCH_OBJ)){
-          array_push($attendance, $row);
-        }
-      }
-    
-      return $attendance ? $attendance : NULL;
-    }
 
     public function single(){
-        $query = "SELECT * from $this->table WHERE student_id = :id";
+        $query = "SELECT $this->table.score AS score, criteria.total AS total, criteria.name AS name 
+        FROM $this->table
+        JOIN criteria
+        WHERE $this->table.student_id = :id AND $this->table.course = :course AND $this->table.criteria_id = criteria.id ";
         $stmt = $this->conn->prepare($query);
 
         //sanitize
         $this->studentId = htmlspecialchars(strip_tags($this->studentId));
+        $this->course = htmlspecialchars(strip_tags($this->course));
 
         //bind parameters
         $stmt->bindParam(':id', $this->studentId);
+        $stmt->bindParam(':course', $this->course);
 
         $stmt->execute();
-        return $stmt;
+
+        $result = $stmt;
+        //get row count
+        $num = $result->rowCount();
+        // create students array
+        $grades = array();
+        // if num > 0
+        if($num > 0){
+          while($row = $result->fetch(PDO::FETCH_OBJ)){
+            array_push($grades, $row);
+          }
+        }
+        // return
+        return $grades ? $grades : NULL;
     }
 
 }
