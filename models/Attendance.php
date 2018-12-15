@@ -7,51 +7,47 @@ class Attendance {
     //tasks properties
     public $id;
     public $studentId;
-    public $advisorId;
-    public $week;
-    public $attended;
-    public $total;
+    public $staffId;
+    public $course;
 
     //constructor
     public function __construct($db){
         $this->conn = $db;
     }
 
-    public function put(){
+    public function put($checks){
+
         //query
-        $query = "INSERT INTO $this->table
-        SET
-            id = :id,
-            student_id = :student_id, 
-            advisor_id = :advisor_id ,
-            attended = :attended, 
-            week = :week
-        ON DUPLICATE KEY UPDATE attended = attended + 1, week = :week
-        ";
+        $query = "INSERT INTO $this->table (student_id, staff_id, course) VALUES";
+
+        foreach ($checks as $check) {
+          $query .= "('$check','$this->staffId', '$this->course'),";
+        }
+
+        $query = substr($query, 0, -1);
+
 
         $stmt = $this->conn->prepare($query);
 
         //  sanitize data
-        $this->id = htmlspecialchars(strip_tags($this->id));
-        $this->studentId = htmlspecialchars(strip_tags($this->studentId));
-        $this->advisorId = htmlspecialchars(strip_tags($this->advisorId));
-        $this->attended = htmlspecialchars(strip_tags($this->attended));
-        $this->week = htmlspecialchars(strip_tags($this->week));
+        // $this->id = htmlspecialchars(strip_tags($this->id));
+        // $this->studentId = htmlspecialchars(strip_tags($this->studentId));
+        // $this->staffId = htmlspecialchars(strip_tags($this->staffId));
+        // $this->course = htmlspecialchars(strip_tags($this->course));
 
         // bind parameter
-        $stmt->bindParam(':id', $this->id);
-        $stmt->bindParam(':student_id', $this->studentId);
-        $stmt->bindParam(':advisor_id', $this->advisorId);
-        $stmt->bindParam(':attended', $this->attended);
-        $stmt->bindParam(':week', $this->week);
+        // $stmt->bindParam(':id', $this->id);
+        // $stmt->bindParam(':student_id', $this->studentId);
+        // $stmt->bindParam(':staff_id', $this->staffId);
+        // $stmt->bindParam(':course', $this->course);
 
 
         // return true if query is successful
         if($stmt->execute()){
-            return true;
+            return TRUE;
         } else {
             printf("Error %s \n", $stmt->error);
-            return false;
+            return FALSE;
         }  
 
     }
@@ -59,49 +55,50 @@ class Attendance {
     // delete attendance
     public function delete(){
         //query
-        $query = "INSERT INTO $this->table
-        SET
-            id = :id,
-            student_id = :student_id, 
-            advisor_id = :advisor_id ,
-            attended = :attended, 
-            week = :week
-        ON DUPLICATE KEY UPDATE attended = attended - 1,
-        week = week - 1
-        ";
+        $query = "DELETE FROM $this->table WHERE student_id = :student_id ORDER BY updated_at DESC LIMIT 1";
     
         $stmt = $this->conn->prepare($query);
 
-        //  sanitize data
-        $this->id = htmlspecialchars(strip_tags($this->id));
+        // sanitize data
         $this->studentId = htmlspecialchars(strip_tags($this->studentId));
-        $this->advisorId = htmlspecialchars(strip_tags($this->advisorId));
-        $this->attended = htmlspecialchars(strip_tags($this->attended));
-        $this->week = htmlspecialchars(strip_tags($this->week));
-    
+
         // bind parameter
-        $stmt->bindParam(':id', $this->id);
         $stmt->bindParam(':student_id',$this->studentId);
-        $stmt->bindParam(':advisor_id',$this->advisorId);
-        $stmt->bindParam(':attended', $this->attended);
-        $stmt->bindParam(':week', $this->week);
-    
     
         // return true if query is successful
         if($stmt->execute()){
-            return true;
+            return TRUE;
         } else {
-            printf("Error %s \n", $stmt->error);
+            return FALSE;
         }
                     
     }
 
     public function getAll(){
         //query
-        $query = "SELECT * FROM $this->table";
+        $query = "SELECT * FROM $this->table WHERE course = :course";
         $stmt = $this->conn->prepare($query);
+        // sanitize data
+        $this->course = htmlspecialchars(strip_tags($this->course));
+
+        // bind parameter
+        $stmt->bindParam(':course',$this->course);
         $stmt->execute();
-        return $stmt;
+        $result = $stmt;
+
+        //get row count
+        $num = $result->rowCount();
+
+        //create student array
+        $attendance = array();
+    
+      if($num > 0){
+        while($row = $result->fetch(PDO::FETCH_OBJ)){
+          array_push($attendance, $row);
+        }
+      }
+    
+      return $attendance ? $attendance : NULL;
     }
 
     public function single(){
