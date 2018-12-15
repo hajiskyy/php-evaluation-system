@@ -22,7 +22,7 @@
       "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome",
-      "url": "http://localhost:80/haji",
+      "url": "http://localhost:80/404project",
       "webRoot": "${workspaceFolder}"
     }
   ]
