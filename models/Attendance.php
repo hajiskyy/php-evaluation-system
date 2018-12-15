@@ -17,30 +17,19 @@ class Attendance {
 
     public function put($checks){
 
-        //query
-        $query = "INSERT INTO $this->table (student_id, staff_id, course) VALUES";
+        //query instert ignore duplicate
+        $query = "INSERT IGNORE INTO $this->table (id, student_id, staff_id, course) VALUES";
 
         foreach ($checks as $check) {
-          $query .= "('$check','$this->staffId', '$this->course'),";
+          $date = new DateTime();
+          $week = $date->format("W");
+          // Id comprises of (course, staffid,studentid, week of the year )
+          $query .= "('$this->course$this->staffId$check$week', '$check','$this->staffId', '$this->course'),";
         }
 
         $query = substr($query, 0, -1);
 
-
         $stmt = $this->conn->prepare($query);
-
-        //  sanitize data
-        // $this->id = htmlspecialchars(strip_tags($this->id));
-        // $this->studentId = htmlspecialchars(strip_tags($this->studentId));
-        // $this->staffId = htmlspecialchars(strip_tags($this->staffId));
-        // $this->course = htmlspecialchars(strip_tags($this->course));
-
-        // bind parameter
-        // $stmt->bindParam(':id', $this->id);
-        // $stmt->bindParam(':student_id', $this->studentId);
-        // $stmt->bindParam(':staff_id', $this->staffId);
-        // $stmt->bindParam(':course', $this->course);
-
 
         // return true if query is successful
         if($stmt->execute()){
