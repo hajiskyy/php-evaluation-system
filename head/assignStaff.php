@@ -96,8 +96,6 @@ if(isset($_SESSION['head']) && isset($_GET['id']) && isset($_GET['course'])){
     } else {
       echo "<script> launch_toast('Something Went Wrong'); </script>";
     }
-    header('Refresh: 0');
-    exit;
   }
 
 ?>

@@ -101,7 +101,7 @@
               <input type="file" name="file" id="<?php echo $t->id;?>" style="display: none;"
               onchange="document.getElementById('resubmit<?php echo $t->id;?>').click()">
 
-              <button type="button" class="btn green" 
+              <button type="button" class="btn yellow" 
               onclick="document.getElementById('<?php echo $t->id;?>').click()">
               <i class="fas fa-upload"></i > reupload</button>
 
@@ -171,7 +171,8 @@ if(isset($_POST['upload'])){
       } else {
         echo "<script> launch_toast('Somthing Went wrong'); </script>";
       }
-
+      header('Refresh: 0');
+      exit;
   } else {
     echo "<script> launch_toast('Upload Failed'); </script>";
   }
